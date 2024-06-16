@@ -2,9 +2,6 @@ interface IFetchServiceConstructor {
   path?: string;
   body?: any;
   method?: string;
-}
-
-interface IFetchParams {
   needCredentials?: boolean;
 }
 
@@ -14,21 +11,23 @@ export class FetchService {
   public path: string;
   public body: any;
   public method: string;
+  public credentials: RequestCredentials;
 
   constructor(params: IFetchServiceConstructor) {
     this.path = params.path ?? '';
     this.body = params.body ?? '';
     this.method = params.method || 'GET';
+    this.credentials = params.needCredentials ? 'include' : 'omit';
   }
 
-  public async fetch(fetchParams: IFetchParams | undefined = {}): Promise<Response> {
+  public async fetch<T>(): Promise<T> {
     const request = await fetch(`${this._baseUrl}${this.path}`, {
       body: JSON.stringify(this.body), // вынести потом
       headers: {
         'Content-Type': 'application/json',
       },
       method: this.method,
-      credentials: fetchParams.needCredentials ? 'include' : 'omit',
+      credentials: this.credentials,
     });
 
     if (!request.ok) {

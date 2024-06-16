@@ -1,1 +1,1 @@
-export default function LogoutPage() {}
+export function POST() {}

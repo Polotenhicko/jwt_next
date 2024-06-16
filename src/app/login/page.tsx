@@ -1,7 +1,14 @@
 'use client';
-import { FetchService } from '@/services/FetchService';
+import { useRouter } from 'next/navigation';
+import AuthService from '@/services/AuthService';
+import Link from 'next/link';
+import inMemoryJWTService from '@/services/TokenService';
+import { useState } from 'react';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [, refresh] = useState({});
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.target as HTMLFormElement;
@@ -9,18 +16,16 @@ export default function LoginPage() {
     const email = target.email.value;
     const password = target.password.value;
 
-    const request = new FetchService({
-      path: '/api/login',
-      body: {
-        email,
-        password,
-      },
-      method: 'POST',
-    });
+    const result = await AuthService.signUp({ email, password });
 
-    const response = await request.fetch();
-    console.log(response);
+    if (!result) {
+      router.push('/');
+    }
+
+    refresh({});
   };
+
+  console.log('login', inMemoryJWTService.getToken());
 
   return (
     <main>
@@ -34,6 +39,8 @@ export default function LoginPage() {
         <br />
         <button type="submit">Submit</button>
       </form>
+      <Link href={'/'}>Main</Link>
+      <Link href={'/guard'}>Guard</Link>
     </main>
   );
 }

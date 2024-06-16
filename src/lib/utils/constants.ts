@@ -3,7 +3,9 @@
 export const COOKIE_SETTINGS = {
   REFRESH_TOKEN: {
     httpOnly: true,
-    exprires: 1e3 * 60 * 60 * 24 * 15, // (15 дней)
+    expires: new Date(Date.now() + 1e3 * 60 * 60 * 24 * 15), // (15 дней)
+    SameSite: 'None',
+    Secure: true,
   },
 };
 

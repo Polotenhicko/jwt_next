@@ -1,18 +1,15 @@
-import jwt from 'jsonwebtoken';
+// Якобы защита от xss чтобы хранить токен в замыкании
+// Хотя по идее в куках было бы норм с samesite=strict
+const inMemoryJWTService = () => {
+  let inMemoryJWT: string | null = null;
 
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || '';
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || '';
+  const getToken = () => inMemoryJWT;
 
-export class TokenService {
-  public static async generateAccessToken(payload: any) {
-    return await jwt.sign(payload, ACCESS_TOKEN_SECRET, {
-      expiresIn: '30m',
-    });
-  }
+  const setToken = (token: string, tokenExpiration: number) => {
+    inMemoryJWT = token;
+  };
 
-  public static async generateRefreshToken(payload: any) {
-    return await jwt.sign(payload, REFRESH_TOKEN_SECRET, {
-      expiresIn: '15d',
-    });
-  }
-}
+  return { getToken, setToken };
+};
+
+export default inMemoryJWTService();

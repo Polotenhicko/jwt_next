@@ -1,33 +1,54 @@
-import { ACCESS_TOKEN_EXPRIRATION } from '@/lib/utils/constants';
-import { TokenService } from './TokenService';
+import { FetchService } from './FetchService';
+import inMemoryJWTService from './TokenService';
 
-interface ISignUp {
+// TODO: вынести интерфейсы
+interface ISignUpPayload {
   email: string;
   password: string;
 }
 
-export class AuthService {
-  static async signUp({ email, password }: ISignUp) {
-    /*
-      Проверка на существование пользователя
-      Либо создаём нового, и при этом хешируем пароль
-    */
+// TODO: Токен устанавливается на бэке, подумать куда закинуть интерфейс
+interface ITokenResponse {
+  accessToken: string;
+  accessTokenExpiration: number;
+}
 
-    const id = `${Math.random()}.${Date.now()}`;
+class AuthService {
+  public async signUp({ email, password }: ISignUpPayload): Promise<boolean> {
+    const request = new FetchService({
+      path: '/api/sign-up',
+      body: {
+        email,
+        password,
+      },
+      method: 'POST',
+      needCredentials: true,
+    });
 
-    const payload = { id, email };
+    const response = await request.fetch<ITokenResponse>();
 
-    const accessToken = await TokenService.generateAccessToken(payload);
-    const refreshToken = await TokenService.generateRefreshToken(payload);
+    inMemoryJWTService.setToken(response.accessToken, response.accessTokenExpiration);
+    console.log(inMemoryJWTService.getToken());
 
-    /*
-      Добавляем в бд рефреш токен по айди пользователю
-    */
+    return true;
+  }
 
-    return {
-      accessToken,
-      refreshToken,
-      accessTokenExpiration: ACCESS_TOKEN_EXPRIRATION,
-    };
+  public async signIn({ email, password }: ISignUpPayload): Promise<boolean> {
+    const request = new FetchService({
+      path: '/api/sign-in',
+      body: {
+        email,
+        password,
+      },
+      method: 'POST',
+    });
+
+    const response = await request.fetch<ITokenResponse>();
+
+    inMemoryJWTService.setToken(response.accessToken, response.accessTokenExpiration);
+
+    return true;
   }
 }
+
+export default new AuthService();
